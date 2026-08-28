@@ -1,33 +1,31 @@
-# matematica-discreta-fase1
+# Proyecto Fase 1 - Matemática Discreta (Streamlit Python)
 
-## Fase 1
+Esta aplicación web resuelve los módulos solicitados de Matemática Discreta utilizando Python y el framework Streamlit para proporcionar una interfaz ágil, reactiva e interactiva.
 
-### 1.1 Teoría de Conjuntos
-- 1.1.1 Conceptos Fundamentales
-- 1.1.2 Operaciones con Conjuntos
-- 1.1.3 Problemas de Aplicación
+## Módulos Implementados
 
-### 1.2 Conjuntos y Probabilidad
-- 1.2.1 Definición de Probabilidad
-- 1.2.2 Probabilidad Condicional
-- 1.2.3 Independencia de Eventos
+1. **Permutaciones y Combinaciones:** Cálculo exacto con factoriales y validación de variables.
+2. **Producto Cartesiano:** Manejo de hasta 10 conjuntos y despliegue del listado completo de pares ordenados (tuplas).
+3. **Diagrama de Venn (3 Conjuntos):** Cálculo de 9 variables de la Inclusión-Exclusión utilizando variables y el Complemento. Permite dejar cualquiera de estas como "incógnita", calculando su valor y renderizando dinámicamente un gráfico de conjuntos y sus intersecciones.
 
-### 1.3 Combinatoria
-- 1.3.1 Principios de Conteo
-- 1.3.2 Permutaciones
-- 1.3.3 Combinaciones
-- 1.3.4 Principio de Inclusión-Exclusión
-- 1.3.5 Probabilidad con Combinatoria
+## Cómo ejecutar de forma local
 
-### 1.4 Fundamentos de Relaciones
-- 1.4.1 Definición de Relaciones
-- 1.4.2 Propiedades de las Relaciones
-- 1.4.3 Relaciones de Equivalencia
-- 1.4.4 Particiones y Clases de Equivalencia
+Requisitos:
+- Tener Python 3.9 o superior instalado.
+- Opcional pero recomendado: un entorno virtual (venv o conda).
 
-### 1.5 Relaciones de Orden
-- 1.5.1 Orden Parcial
-- 1.5.2 Diagramas de Hasse
-- 1.5.3 Cadenas y Ant Cadenas
-- 1.5.4 Orden Total
-    
+**Instalación:**
+```bash
+# 1. Clona el repositorio y navega a esta carpeta.
+# 2. Instala las dependencias:
+pip install -r requirements.txt
+```
+
+**Ejecución:**
+```bash
+streamlit run app.py
+```
+Se abrirá automáticamente una pestaña en tu navegador con la interfaz gráfica de la aplicación.
+
+## Despliegue en la Nube
+El proyecto se encuentra optimizado para ser desplegado utilizando **Streamlit Community Cloud** (share.streamlit.io). El archivo `requirements.txt` ya incluye todas las bibliotecas gráficas necesarias (`streamlit`, `matplotlib`, `matplotlib-venn`) para que el renderizado remoto de los diagramas funcione perfectamente.

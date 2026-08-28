@@ -1,0 +1,35 @@
+# Build directory (C++)
+build/
+
+# Compiled binaries (C++)
+app_prueba
+Fase1
+TestCLI
+*.o
+*.a
+*.dylib
+
+# Qt Creator files
+*.pro.user
+*.qmake.stash
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# macOS
+.DS_Store
+*.app/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# Streamlit
+.streamlit/secrets.toml
