@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 **Ejecución:**
 ```bash
-streamlit run app.py
+streamlit run streamlit_app.py
 ```
 Se abrirá automáticamente una pestaña en tu navegador con la interfaz gráfica de la aplicación.
 
