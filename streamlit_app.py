@@ -7,7 +7,7 @@ Producto Cartesiano, y Diagrama de Venn.
 import streamlit as st
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib_venn import venn3
+from matplotlib_venn import venn3, venn2
 
 from matematica.logica_matematica import (
     factorial,
@@ -15,7 +15,9 @@ from matematica.logica_matematica import (
     combinacion,
     producto_cartesiano,
     resolver_venn,
+    resolver_venn_2_conjuntos,
     VARIABLES_VENN,
+    VARIABLES_VENN_2,
 )
 
 matplotlib.use("Agg")
@@ -256,52 +258,63 @@ with tab_cart:
 #  TAB 3 — DIAGRAMA DE VENN
 # ──────────────────────────────────────────────────────────────
 with tab_venn:
-    st.subheader("Diagrama de Venn — 3 Conjuntos")
+    st.subheader("Diagrama de Venn")
     st.caption(
         "Selecciona la variable incógnita y completa los valores conocidos. "
         "El sistema despejará la incógnita usando Inclusión-Exclusión."
     )
 
+    num_conjuntos = st.radio("¿Cuántos conjuntos deseas relacionar?", [2, 3], horizontal=True)
+
+    st.divider()
+
+    dict_vars = VARIABLES_VENN_2 if num_conjuntos == 2 else VARIABLES_VENN
+
     incognita = st.selectbox(
         "🔍 Variable incógnita (será despejada):",
-        list(VARIABLES_VENN.keys()),
-        format_func=lambda x: VARIABLES_VENN[x],
+        list(dict_vars.keys()),
+        format_func=lambda x: dict_vars[x],
         key="venn_inc",
     )
 
     st.divider()
 
-    # ── Inputs organizados en 3 columnas ──
+    # ── Inputs ──
     col1, col2, col3 = st.columns(3)
 
-    # Valores por defecto consistentes:
-    # U=100, A=50, B=40, C=30, AnB=10, AnC=8, BnC=12, AnBnC=5, Comp=5
-    defaults = {
-        "U": 100, "A": 50, "B": 40, "C": 30,
-        "AnB": 10, "AnC": 8, "BnC": 12, "AnBnC": 5, "Complemento": 5,
-    }
+    defaults_2 = {"U": 100, "A": 50, "B": 40, "AnB": 10, "Complemento": 20}
+    defaults_3 = {"U": 100, "A": 50, "B": 40, "C": 30, "AnB": 10, "AnC": 8, "BnC": 12, "AnBnC": 5, "Complemento": 5}
+    
+    defaults = defaults_2 if num_conjuntos == 2 else defaults_3
 
-    layout = [
+    layout_2 = [
+        (col1, ["U", "A"]),
+        (col2, ["B", "AnB"]),
+        (col3, ["Complemento"]),
+    ]
+    layout_3 = [
         (col1, ["U", "A", "B"]),
         (col2, ["C", "AnB", "AnC"]),
         (col3, ["BnC", "AnBnC", "Complemento"]),
     ]
+    
+    layout = layout_2 if num_conjuntos == 2 else layout_3
 
     valores = {}
     for col, var_keys in layout:
         with col:
             for var_key in var_keys:
                 if var_key == incognita:
-                    st.markdown(f"**🔍 {VARIABLES_VENN[var_key]}** — *Incógnita*")
+                    st.markdown(f"**🔍 {dict_vars[var_key]}** — *Incógnita*")
                     st.info("¿? — Será calculada")
                     valores[var_key] = 0
                 else:
                     valores[var_key] = st.number_input(
-                        VARIABLES_VENN[var_key],
+                        dict_vars[var_key],
                         min_value=0,
                         value=defaults[var_key],
                         step=1,
-                        key=f"venn_{var_key}",
+                        key=f"venn_{var_key}_{num_conjuntos}",
                     )
 
     if st.button(
@@ -310,18 +323,18 @@ with tab_venn:
         type="primary",
         use_container_width=True,
     ):
-        resultado, pasos, regiones = resolver_venn(
-            U=valores["U"],
-            A=valores["A"],
-            B=valores["B"],
-            C=valores["C"],
-            AnB=valores["AnB"],
-            AnC=valores["AnC"],
-            BnC=valores["BnC"],
-            AnBnC=valores["AnBnC"],
-            Complemento=valores["Complemento"],
-            incognita=incognita,
-        )
+        if num_conjuntos == 2:
+            resultado, pasos, regiones = resolver_venn_2_conjuntos(
+                U=valores["U"], A=valores["A"], B=valores["B"],
+                AnB=valores["AnB"], Complemento=valores["Complemento"],
+                incognita=incognita
+            )
+        else:
+            resultado, pasos, regiones = resolver_venn(
+                U=valores["U"], A=valores["A"], B=valores["B"], C=valores["C"],
+                AnB=valores["AnB"], AnC=valores["AnC"], BnC=valores["BnC"], AnBnC=valores["AnBnC"],
+                Complemento=valores["Complemento"], incognita=incognita
+            )
 
         st.divider()
 
@@ -348,25 +361,17 @@ with tab_venn:
             fig.patch.set_facecolor("#0E1117")
             ax.set_facecolor("#0E1117")
 
-            # Valores para venn3 (diagrama no ponderado, todos con tamaño 1)
-            subset_values = (1, 1, 1, 1, 1, 1, 1)
-
-            # Valores reales para las etiquetas (pueden ser negativos)
-            real_labels = [
-                regiones["solo_A"],
-                regiones["solo_B"],
-                regiones["solo_AB"],
-                regiones["solo_C"],
-                regiones["solo_AC"],
-                regiones["solo_BC"],
-                regiones["ABC"],
-            ]
-
-            v = venn3(
-                subsets=subset_values,
-                set_labels=("A", "B", "C"),
-                ax=ax,
-            )
+            if num_conjuntos == 2:
+                subset_values = (1, 1, 1)
+                real_labels = [regiones["solo_A"], regiones["solo_B"], regiones["AB"]]
+                v = venn2(subsets=subset_values, set_labels=("A", "B"), ax=ax)
+            else:
+                subset_values = (1, 1, 1, 1, 1, 1, 1)
+                real_labels = [
+                    regiones["solo_A"], regiones["solo_B"], regiones["solo_AB"],
+                    regiones["solo_C"], regiones["solo_AC"], regiones["solo_BC"], regiones["ABC"]
+                ]
+                v = venn3(subsets=subset_values, set_labels=("A", "B", "C"), ax=ax)
 
             # Estilizar las regiones
             for patch in v.patches:
@@ -392,34 +397,15 @@ with tab_venn:
             # Universo resuelto
             u_final = valores["U"] if incognita != "U" else resultado
             ax.set_title(
-                f"U = {u_final}",
-                color="white",
-                fontsize=14,
-                fontweight="bold",
-                pad=20,
+                f"U = {u_final}", color="white", fontsize=14, fontweight="bold", pad=20
             )
 
             # Complemento
-            comp_val = (
-                valores["Complemento"]
-                if incognita != "Complemento"
-                else resultado
-            )
+            comp_val = valores["Complemento"] if incognita != "Complemento" else resultado
             ax.text(
-                0.95,
-                0.05,
-                f"Comp = {comp_val}",
-                transform=ax.transAxes,
-                color="#c4b5fd",
-                fontsize=11,
-                ha="right",
-                va="bottom",
-                bbox=dict(
-                    boxstyle="round,pad=0.4",
-                    facecolor="#1B1F2B",
-                    edgecolor="#7C5CFC",
-                    alpha=0.9,
-                ),
+                0.95, 0.05, f"Comp = {comp_val}",
+                transform=ax.transAxes, color="#c4b5fd", fontsize=11, ha="right", va="bottom",
+                bbox=dict(boxstyle="round,pad=0.4", facecolor="#1B1F2B", edgecolor="#7C5CFC", alpha=0.9),
             )
 
             st.pyplot(fig)

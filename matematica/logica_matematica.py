@@ -87,6 +87,14 @@ VARIABLES_VENN = {
     "Complemento": "Complemento",
 }
 
+VARIABLES_VENN_2 = {
+    "U": "Universo (U)",
+    "A": "Conjunto A",
+    "B": "Conjunto B",
+    "AnB": "A ∩ B",
+    "Complemento": "Complemento",
+}
+
 
 def resolver_venn(
     *,
@@ -204,6 +212,82 @@ def resolver_venn(
         "solo_AC": AnC - AnBnC,
         "solo_BC": BnC - AnBnC,
         "ABC": AnBnC,
+        "complemento": Complemento,
+    }
+
+    return resultado, pasos, regiones
+
+
+# ═══════════════════════════════════════════════════════════════
+#  DIAGRAMA DE VENN — INCLUSIÓN-EXCLUSIÓN (2 CONJUNTOS)
+# ═══════════════════════════════════════════════════════════════
+
+def resolver_venn_2_conjuntos(
+    *,
+    U: int, A: int, B: int,
+    AnB: int,
+    Complemento: int,
+    incognita: str,
+) -> Tuple[int, str, Dict[str, int]]:
+    """
+    Resuelve la fórmula de Inclusión-Exclusión para 2 conjuntos.
+    """
+    pasos = "### Fórmula de Inclusión-Exclusión (2 Conjuntos)\n\n"
+    pasos += "$$|A \cup B| = |A| + |B| - |A \cap B|$$\n\n"
+    pasos += "$$U = |A \cup B| + \text{Complemento}$$\n\n"
+    pasos += "---\n\n"
+
+    resultado = 0
+
+    if incognita == "U":
+        resultado = A + B - AnB + Complemento
+        U = resultado
+        pasos += "**Incógnita: Universo (U)**\n\n"
+        pasos += "$$U = |A| + |B| - |A \cap B| + \text{Comp}$$\n\n"
+        pasos += f"$$U = {A} + {B} - {AnB} + {Complemento}$$\n\n"
+        pasos += f"$$\\boxed{{U = {resultado}}}$$"
+
+    elif incognita == "Complemento":
+        AUB = A + B - AnB
+        resultado = U - AUB
+        Complemento = resultado
+        pasos += "**Incógnita: Complemento**\n\n"
+        pasos += "$$\text{Comp} = U - (|A| + |B| - |A \cap B|)$$\n\n"
+        pasos += f"$$\text{{Comp}} = {U} - ({A} + {B} - {AnB})$$\n\n"
+        pasos += f"$$\text{{Comp}} = {U} - {AUB}$$\n\n"
+        pasos += f"$$\\boxed{{\text{{Complemento}} = {resultado}}}$$"
+
+    elif incognita == "A":
+        AUB = U - Complemento
+        resultado = AUB - B + AnB
+        A = resultado
+        pasos += "**Incógnita: Conjunto A**\n\n"
+        pasos += "$$|A| = |A \cup B| - |B| + |A \cap B|$$\\n\n"
+        pasos += f"$$|A| = ({U} - {Complemento}) - {B} + {AnB}$$\n\n"
+        pasos += f"$$\\boxed{{A = {resultado}}}$$"
+
+    elif incognita == "B":
+        AUB = U - Complemento
+        resultado = AUB - A + AnB
+        B = resultado
+        pasos += "**Incógnita: Conjunto B**\n\n"
+        pasos += "$$|B| = |A \cup B| - |A| + |A \cap B|$$\\n\n"
+        pasos += f"$$|B| = ({U} - {Complemento}) - {A} + {AnB}$$\n\n"
+        pasos += f"$$\\boxed{{B = {resultado}}}$$"
+
+    elif incognita == "AnB":
+        AUB = U - Complemento
+        resultado = A + B - AUB
+        AnB = resultado
+        pasos += "**Incógnita: A ∩ B**\n\n"
+        pasos += "$$|A \cap B| = |A| + |B| - |A \cup B|$$\n\n"
+        pasos += f"$$|A \cap B| = {A} + {B} - ({U} - {Complemento})$$\n\n"
+        pasos += f"$$\\boxed{{A \cap B = {resultado}}}$$"
+
+    regiones = {
+        "solo_A": A - AnB,
+        "solo_B": B - AnB,
+        "AB": AnB,
         "complemento": Complemento,
     }
 
