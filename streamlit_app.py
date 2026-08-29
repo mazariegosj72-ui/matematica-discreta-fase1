@@ -7,7 +7,7 @@ Producto Cartesiano, y Diagrama de Venn.
 import streamlit as st
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib_venn import venn3_unweighted
+from matplotlib_venn import venn3
 
 from matematica.logica_matematica import (
     factorial,
@@ -348,16 +348,8 @@ with tab_venn:
             fig.patch.set_facecolor("#0E1117")
             ax.set_facecolor("#0E1117")
 
-            # Valores para venn3: (Abc, aBc, ABc, abC, AbC, aBC, ABC)
-            subset_values = (
-                max(0, regiones["solo_A"]),
-                max(0, regiones["solo_B"]),
-                max(0, regiones["solo_AB"]),
-                max(0, regiones["solo_C"]),
-                max(0, regiones["solo_AC"]),
-                max(0, regiones["solo_BC"]),
-                max(0, regiones["ABC"]),
-            )
+            # Valores para venn3 (diagrama no ponderado, todos con tamaño 1)
+            subset_values = (1, 1, 1, 1, 1, 1, 1)
 
             # Valores reales para las etiquetas (pueden ser negativos)
             real_labels = [
@@ -370,7 +362,7 @@ with tab_venn:
                 regiones["ABC"],
             ]
 
-            v = venn3_unweighted(
+            v = venn3(
                 subsets=subset_values,
                 set_labels=("A", "B", "C"),
                 ax=ax,
