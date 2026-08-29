@@ -418,6 +418,36 @@ with tab_venn:
                     "inconsistentes para un diagrama de Venn válido."
                 )
 
+        st.divider()
+        st.markdown("### 🧮 Operaciones de Conjuntos (Resultados Extra)")
+        
+        # Reconstruir valores finales para los cálculos
+        v_final = valores.copy()
+        v_final[incognita] = resultado
+
+        col_op1, col_op2 = st.columns(2)
+        
+        if num_conjuntos == 2:
+            with col_op1:
+                st.markdown(f"- **Unión ($A \\cup B$):** `{v_final['A'] + v_final['B'] - v_final['AnB']}`")
+                st.markdown(f"- **Intersección ($A \\cap B$):** `{v_final['AnB']}`")
+                st.markdown(f"- **Complemento de A ($A'$):** `{v_final['U'] - v_final['A']}`")
+            with col_op2:
+                st.markdown(f"- **Diferencia ($A - B$):** `{regiones['solo_A']}`")
+                st.markdown(f"- **Diferencia ($B - A$):** `{regiones['solo_B']}`")
+                st.markdown(f"- **Complemento de B ($B'$):** `{v_final['U'] - v_final['B']}`")
+        else:
+            aubuc = v_final["U"] - v_final["Complemento"]
+            with col_op1:
+                st.markdown(f"- **Unión ($A \\cup B \\cup C$):** `{aubuc}`")
+                st.markdown(f"- **Intersección total ($A \\cap B \\cap C$):** `{v_final['AnBnC']}`")
+                st.markdown(f"- **Complemento de A ($A'$):** `{v_final['U'] - v_final['A']}`")
+            with col_op2:
+                st.markdown(f"- **Diferencia ($A - B$):** `{regiones['solo_A'] + regiones['solo_AC']}`")
+                st.markdown(f"- **Diferencia ($B - A$):** `{regiones['solo_B'] + regiones['solo_BC']}`")
+                st.markdown(f"- **Complemento de B ($B'$):** `{v_final['U'] - v_final['B']}`")
+
+
 
 # ═══════════════════════════════════════════════════════════════
 #  FOOTER
