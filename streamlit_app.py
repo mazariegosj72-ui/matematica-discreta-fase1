@@ -1,12 +1,14 @@
 """
-Matemática Discreta — Fase 1
-Aplicación Streamlit con 3 módulos: Permutaciones/Combinaciones,
-Producto Cartesiano, y Diagrama de Venn.
+Matemática Discreta — Fase 1 y Nuevos Módulos
+Aplicación Streamlit con 5 módulos: Permutaciones/Combinaciones,
+Producto Cartesiano, Diagrama de Venn, Estimación de Ruta (Grafos),
+y Cálculo de MSM/MSD (MCM/MCD).
 """
 
 import streamlit as st
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib_venn import venn3, venn2
 
 from matematica.logica_matematica import (
@@ -18,6 +20,14 @@ from matematica.logica_matematica import (
     resolver_venn_2_conjuntos,
     VARIABLES_VENN,
     VARIABLES_VENN_2,
+    dijkstra_paso_a_paso,
+    camino_mas_largo_paso_a_paso,
+    generar_figura_grafo,
+    algoritmo_euclides,
+    calcular_msm_algoritmo,
+    descomponer_factores_primos,
+    comparar_factores_primos,
+    factorizacion_simultanea,
 )
 
 matplotlib.use("Agg")
@@ -114,13 +124,16 @@ st.markdown(
 # ═══════════════════════════════════════════════════════════════
 #  TABS PRINCIPALES
 # ═══════════════════════════════════════════════════════════════
-tab_perm, tab_cart, tab_venn = st.tabs(
+tab_perm, tab_cart, tab_venn, tab_grafos, tab_msm_msd = st.tabs(
     [
         "📊 Permutaciones y Combinaciones",
         "✖️ Producto Cartesiano",
         "⭕ Diagrama de Venn",
+        "🗺️ Estimación de Ruta (Grafos)",
+        "🔢 MSM y MSD (MCM y MCD)",
     ]
 )
+
 
 
 # ──────────────────────────────────────────────────────────────
@@ -464,6 +477,463 @@ with tab_venn:
                 st.markdown(f"- **Diferencia ($A - B$):** `{regiones['solo_A'] + regiones['solo_AC']}`")
                 st.markdown(f"- **Diferencia ($B - A$):** `{regiones['solo_B'] + regiones['solo_BC']}`")
                 st.markdown(f"- **Complemento de B ($B'$):** `{v_final['U'] - v_final['B']}`")
+
+
+
+# ──────────────────────────────────────────────────────────────
+#  TAB 4 — ESTIMACIÓN DE RUTA (GRAFOS)
+# ──────────────────────────────────────────────────────────────
+with tab_grafos:
+    st.subheader("🗺️ Estimación de Ruta en Grafos")
+    st.caption(
+        "Ingresa la matriz de adyacencia y pesos para estimar la **Ruta Más Corta** (Algoritmo de Dijkstra) "
+        "o la **Ruta Más Larga** (Camino Simple Máximo / Ruta Crítica PERT-CPM)."
+    )
+
+    # Inicializar estado de matriz si no existe
+    if "grafo_num_nodos" not in st.session_state:
+        st.session_state["grafo_num_nodos"] = 4
+    if "grafo_nombres" not in st.session_state:
+        st.session_state["grafo_nombres"] = ["A", "B", "C", "D"]
+    if "grafo_matriz_df" not in st.session_state:
+        df_init = pd.DataFrame(
+            [
+                [0.0, 2.0, 5.0, 0.0],
+                [0.0, 0.0, 1.0, 4.0],
+                [0.0, 0.0, 0.0, 2.0],
+                [0.0, 0.0, 0.0, 0.0],
+            ],
+            index=["A", "B", "C", "D"],
+            columns=["A", "B", "C", "D"],
+        )
+        st.session_state["grafo_matriz_df"] = df_init
+
+    # Botones de plantillas de ejemplo
+    st.markdown("**⚡ Cargar ejemplos predefinidos:**")
+    col_ex1, col_ex2, col_ex3, col_ex4 = st.columns(4)
+
+    def set_matriz(nombres, valores):
+        st.session_state["grafo_num_nodos"] = len(nombres)
+        st.session_state["grafo_nombres"] = nombres
+        st.session_state["grafo_matriz_df"] = pd.DataFrame(
+            valores, index=nombres, columns=nombres, dtype=float
+        )
+        st.rerun()
+
+    with col_ex1:
+        if st.button("📋 Red 4 Nodos (Básica)", key="btn_ex1", use_container_width=True):
+            set_matriz(
+                ["A", "B", "C", "D"],
+                [
+                    [0.0, 2.0, 5.0, 0.0],
+                    [0.0, 0.0, 1.0, 4.0],
+                    [0.0, 0.0, 0.0, 2.0],
+                    [0.0, 0.0, 0.0, 0.0],
+                ],
+            )
+    with col_ex2:
+        if st.button("🚚 Red 5 Nodos (Transporte)", key="btn_ex2", use_container_width=True):
+            set_matriz(
+                ["A", "B", "C", "D", "E"],
+                [
+                    [0.0, 4.0, 2.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 5.0, 0.0],
+                    [0.0, 0.0, 0.0, 8.0, 10.0],
+                    [0.0, 0.0, 0.0, 0.0, 2.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+            )
+    with col_ex3:
+        if st.button("📈 Red 6 Nodos (Ruta Crítica DAG)", key="btn_ex3", use_container_width=True):
+            set_matriz(
+                ["A", "B", "C", "D", "E", "F"],
+                [
+                    [0.0, 3.0, 2.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 4.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0, 5.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 6.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 3.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                ],
+            )
+    with col_ex4:
+        if st.button("🧹 Limpiar Matriz (Ceros)", key="btn_ex_clear", use_container_width=True):
+            curr_n = st.session_state["grafo_num_nodos"]
+            nombres = [chr(65 + i) for i in range(curr_n)]
+            st.session_state["grafo_nombres"] = nombres
+            st.session_state["grafo_matriz_df"] = pd.DataFrame(
+                0.0, index=nombres, columns=nombres
+            )
+            st.rerun()
+
+    st.divider()
+
+    # Controles de configuración del grafo
+    col_cfg1, col_cfg2, col_cfg3 = st.columns([1, 1, 1])
+
+    with col_cfg1:
+        criterio_ruta = st.radio(
+            "Criterio de estimación:",
+            ["🟢 Ruta más corta (Dijkstra)", "🔴 Ruta más larga (Camino Simple Máximo)"],
+            key="radio_criterio_ruta",
+        )
+
+    with col_cfg2:
+        tipo_grafo = st.radio(
+            "Tipo de grafo:",
+            ["Grafo Dirigido (Dígrafo)", "Grafo No Dirigido (Bidireccional)"],
+            key="radio_tipo_grafo",
+        )
+        es_dirigido = tipo_grafo.startswith("Grafo Dirigido")
+
+    with col_cfg3:
+        nuevo_n = st.slider(
+            "Cantidad de nodos en el grafo:",
+            min_value=3,
+            max_value=8,
+            value=st.session_state["grafo_num_nodos"],
+            key="slider_num_nodos",
+        )
+        if nuevo_n != st.session_state["grafo_num_nodos"]:
+            nombres_nuevos = [chr(65 + i) for i in range(nuevo_n)]
+            df_viejo = st.session_state["grafo_matriz_df"]
+            df_nuevo = pd.DataFrame(0.0, index=nombres_nuevos, columns=nombres_nuevos)
+            for r in df_viejo.index:
+                for c in df_viejo.columns:
+                    if r in nombres_nuevos and c in nombres_nuevos:
+                        df_nuevo.loc[r, c] = df_viejo.loc[r, c]
+            st.session_state["grafo_num_nodos"] = nuevo_n
+            st.session_state["grafo_nombres"] = nombres_nuevos
+            st.session_state["grafo_matriz_df"] = df_nuevo
+            st.rerun()
+
+    nombres_nodos = st.session_state["grafo_nombres"]
+
+    st.markdown("#### 🔢 Matriz de Adyacencia / Costos")
+    st.caption(
+        "Fila = Nodo Origen, Columna = Nodo Destino. Ingresa el peso o distancia de la arista. "
+        "Usa `0` para indicar ausencia de conexión directa."
+    )
+
+    matriz_editada = st.data_editor(
+        st.session_state["grafo_matriz_df"],
+        key="editor_matriz_grafo",
+        use_container_width=True,
+    )
+    st.session_state["grafo_matriz_df"] = matriz_editada
+
+    col_org, col_dst, col_btn = st.columns([1, 1, 1])
+    with col_org:
+        origen_sel = st.selectbox(
+            "Nodo Origen (Inicio):",
+            nombres_nodos,
+            index=0,
+            key="grafo_origen",
+        )
+    with col_dst:
+        destino_sel = st.selectbox(
+            "Nodo Destino (Fin):",
+            nombres_nodos,
+            index=len(nombres_nodos) - 1,
+            key="grafo_destino",
+        )
+    with col_btn:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        calcular_ruta_btn = st.button(
+            "🚀 Calcular Estimación de Ruta",
+            key="btn_calc_ruta",
+            type="primary",
+            use_container_width=True,
+        )
+
+    if calcular_ruta_btn:
+        matriz_vals = matriz_editada.to_numpy().astype(float).tolist()
+        n = len(nombres_nodos)
+
+        if not es_dirigido:
+            for i in range(n):
+                for j in range(n):
+                    val_max = max(matriz_vals[i][j], matriz_vals[j][i])
+                    matriz_vals[i][j] = val_max
+                    matriz_vals[j][i] = val_max
+
+        es_corta = criterio_ruta.startswith("🟢 Ruta más corta")
+
+        if es_corta:
+            resultado_ruta = dijkstra_paso_a_paso(
+                matriz_vals, nombres_nodos, origen_sel, destino_sel, es_dirigido=es_dirigido
+            )
+        else:
+            resultado_ruta = camino_mas_largo_paso_a_paso(
+                matriz_vals, nombres_nodos, origen_sel, destino_sel, es_dirigido=es_dirigido
+            )
+
+        st.divider()
+
+        if not resultado_ruta["encontrada"]:
+            st.error(resultado_ruta["pasos"])
+            fig_err = generar_figura_grafo(
+                matriz_vals, nombres_nodos, ruta_destacada=None, es_dirigido=es_dirigido
+            )
+            st.pyplot(fig_err)
+            plt.close(fig_err)
+        else:
+            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+            with col_m1:
+                tipo_txt = "Distancia Mínima" if es_corta else "Distancia Máxima"
+                st.metric(tipo_txt, f"{resultado_ruta['distancia']:g}")
+            with col_m2:
+                st.metric("Ruta Óptima", " ➔ ".join(resultado_ruta["ruta"]))
+            with col_m3:
+                st.metric("Tramos / Aristas", f"{len(resultado_ruta['aristas_ruta'])}")
+            with col_m4:
+                if not es_corta:
+                    st.metric("¿Es Grafo DAG?", "Sí (Acíclico)" if resultado_ruta.get("es_dag") else "No / Con Ciclos")
+                else:
+                    st.metric("Algoritmo", "Dijkstra")
+
+            col_viz, col_detalles = st.columns([1.1, 1], gap="large")
+
+            with col_viz:
+                st.markdown("### 📊 Visualización del Grafo y Ruta")
+                fig_grafo = generar_figura_grafo(
+                    matriz_vals,
+                    nombres_nodos,
+                    ruta_destacada=resultado_ruta["ruta"],
+                    es_dirigido=es_dirigido,
+                    es_mas_larga=not es_corta,
+                )
+                st.pyplot(fig_grafo)
+                plt.close(fig_grafo)
+                st.caption(
+                    "🟡/🟢 Los nodos y aristas de la ruta óptima calculada aparecen destacados. "
+                    "Las aristas normales se muestran en gris atenuado."
+                )
+
+            with col_detalles:
+                st.markdown(resultado_ruta["pasos"])
+
+                if es_corta:
+                    with st.expander("📝 Tabla de Iteraciones de Dijkstra (Paso a Paso)", expanded=True):
+                        filas_tabla = []
+                        for fila in resultado_ruta["tabla_iteraciones"]:
+                            dists_str = ", ".join([f"{k}:{v}" for k, v in fila["distancias"].items()])
+                            preds_str = ", ".join([f"{k}←{v}" for k, v in fila["predecesores"].items() if v != "-"])
+                            filas_tabla.append({
+                                "Paso": fila["paso"],
+                                "Nodo": fila["nodo_actual"],
+                                "Acción / Relajación": fila["accion"],
+                                "Distancias": dists_str,
+                                "Predecesores": preds_str or "-",
+                            })
+                        st.dataframe(pd.DataFrame(filas_tabla), use_container_width=True, hide_index=True)
+                else:
+                    with st.expander("📋 Comparativa de Todos los Caminos Simples Evaluados", expanded=True):
+                        caminos_df = []
+                        for idx, item in enumerate(resultado_ruta["todos_los_caminos"], 1):
+                            es_ganador = "🏆 (MÁS LARGO)" if idx == 1 else ""
+                            caminos_df.append({
+                                "N°": idx,
+                                "Camino": " ➔ ".join(item["ruta"]),
+                                "Distancia Acumulada": f"{item['peso']:g}",
+                                "Estado": es_ganador or "Alternativa",
+                            })
+                        st.dataframe(pd.DataFrame(caminos_df), use_container_width=True, hide_index=True)
+
+
+# ──────────────────────────────────────────────────────────────
+#  TAB 5 — MSM Y MSD (MCM Y MCD)
+# ──────────────────────────────────────────────────────────────
+with tab_msm_msd:
+    st.subheader("🔢 Cálculo de MSM y MSD (MCM y MCD)")
+    st.caption(
+        "Cálculo del **MSD** (Máximo Sub-Divisor / MCD) y del **MSM** (Mínimo Sub-Múltiplo / MCM) "
+        "para dos números enteros positivos. Permite trabajar por **Algoritmo de Euclides** "
+        "o por **Descomposición en Factores Primos**."
+    )
+
+    col_in_a, col_in_b, col_in_met = st.columns([1, 1, 1.2])
+
+    with col_in_a:
+        num_a = st.number_input(
+            "Primer número (a):",
+            min_value=1,
+            value=48,
+            step=1,
+            key="input_num_a",
+        )
+    with col_in_b:
+        num_b = st.number_input(
+            "Segundo número (b):",
+            min_value=1,
+            value=18,
+            step=1,
+            key="input_num_b",
+        )
+    with col_in_met:
+        metodo_calc = st.radio(
+            "Método de trabajo:",
+            [
+                "⚙️ Por Algoritmo (Euclides y Relación Fundamental)",
+                "🌲 Por Descomposición en Factores Primos",
+                "🌟 Ambos Métodos (Comparativa Completa)",
+            ],
+            key="radio_metodo_msm_msd",
+        )
+
+    btn_calc_msm_msd = st.button(
+        "🧮 Calcular MSM y MSD",
+        key="btn_calc_msm_msd",
+        type="primary",
+        use_container_width=True,
+    )
+
+    if btn_calc_msm_msd:
+        mcd_val, pasos_euclides = algoritmo_euclides(num_a, num_b)
+        msm_val, exp_msm = calcular_msm_algoritmo(num_a, num_b, mcd_val)
+        comp_factores = comparar_factores_primos(num_a, num_b)
+        filas_sim, sim_msd, sim_msm = factorizacion_simultanea(num_a, num_b)
+
+        st.divider()
+
+        # Métricas principales
+        col_res1, col_res2, col_res3 = st.columns(3)
+        with col_res1:
+            st.metric("MSD / MCD (Máximo Divisor)", f"{mcd_val:,}")
+            st.caption("Mayor número entero que divide exactamente a ambos.")
+        with col_res2:
+            st.metric("MSM / MCM (Mínimo Múltiplo)", f"{msm_val:,}")
+            st.caption("Menor número positivo que es múltiplo de ambos.")
+        with col_res3:
+            prod_ab = num_a * num_b
+            prod_ms = mcd_val * msm_val
+            st.metric("Comprobación (a × b)", f"{prod_ab:,}")
+            st.caption(f"MSD × MSM = {mcd_val} × {msm_val} = {prod_ms}")
+
+        st.divider()
+
+        mostrar_algoritmo = ("Por Algoritmo" in metodo_calc) or ("Ambos" in metodo_calc)
+        mostrar_factores = ("Factores Primos" in metodo_calc) or ("Ambos" in metodo_calc)
+
+        # ── SECCIÓN 1: MÉTODO POR ALGORITMO ──
+        if mostrar_algoritmo:
+            st.markdown("### ⚙️ Método 1: Por Algoritmo")
+            st.markdown(
+                "En matemática discreta, el **Algoritmo de Euclides** es el procedimiento algorítmico fundamental "
+                "para calcular el MCD mediante divisiones sucesivas. Posteriormente, el MSM se obtiene mediante la "
+                "**Relación Fundamental** entre MCD y MCM."
+            )
+
+            col_euc1, col_euc2 = st.columns([1.2, 1], gap="large")
+
+            with col_euc1:
+                st.markdown("#### 1.1 Algoritmo de Euclides (Divisiones Sucesivas para MSD)")
+                st.markdown(
+                    "Teorema: $\\text{mcd}(a, b) = \\text{mcd}(b, r)$, donde $a = b \\cdot q + r$. "
+                    "El algoritmo finaliza cuando el residuo es 0; el último residuo no nulo es el **MSD**."
+                )
+
+                df_euclides = pd.DataFrame([
+                    {
+                        "Paso": f["paso"],
+                        "Dividendo (a)": f["dividendo"],
+                        "Divisor (b)": f["divisor"],
+                        "Cociente (q)": f["cociente"],
+                        "Residuo (r)": f["residuo"],
+                        "Ecuación": f"{f['dividendo']} = {f['divisor']} × {f['cociente']} + {f['residuo']}",
+                    }
+                    for f in pasos_euclides
+                ])
+                st.dataframe(df_euclides, use_container_width=True, hide_index=True)
+
+                st.success(f"✅ **Último residuo no nulo:** `{mcd_val}` ➔ **MSD({num_a}, {num_b}) = {mcd_val}**")
+
+            with col_euc2:
+                st.markdown("#### 1.2 Relación Fundamental (Algoritmo para MSM)")
+                st.markdown(
+                    "Se aplica la propiedad que relaciona el producto de dos números con su MCD y MCM: "
+                    "$$\\text{MSM}(a, b) \\times \\text{MSD}(a, b) = a \\times b$$"
+                )
+                st.markdown("Despejando el MSM:")
+                st.latex(rf"\text{{MSM}}({num_a}, {num_b}) = \frac{{{num_a} \times {num_b}}}{{\text{{MSD}}({num_a}, {num_b})}}")
+                st.latex(rf"\text{{MSM}}({num_a}, {num_b}) = \frac{{{num_a * num_b:,}}}{{{mcd_val}}} = {msm_val:,}")
+                st.info(f"🎯 **Resultado:** **MSM({num_a}, {num_b}) = {msm_val:,}**")
+
+            if mostrar_factores:
+                st.divider()
+
+        # ── SECCIÓN 2: MÉTODO POR FACTORES PRIMOS ──
+        if mostrar_factores:
+            st.markdown("### 🌲 Método 2: Por Descomposición en Factores Primos")
+            st.markdown(
+                "Descompone cada número en sus factores primos canónicos. "
+                "- Para el **MSD**: Se toman únicamente los factores primos **comunes** con su **menor exponente** ($\\min$).\n"
+                "- Para el **MSM**: Se toman todos los factores primos (**comunes y no comunes**) con su **mayor exponente** ($\\max$)."
+            )
+
+            col_f1, col_f2 = st.columns(2)
+
+            with col_f1:
+                st.markdown(f"**Factorización de a = {num_a}:**")
+                st.latex(rf"{num_a} = {comp_factores['str_a']}")
+                with st.expander(f"Ver divisiones sucesivas de {num_a}"):
+                    df_pa = pd.DataFrame(comp_factores["pasos_a"], columns=["Valor", "Divisor Primo"])
+                    st.dataframe(df_pa, use_container_width=True, hide_index=True)
+
+            with col_f2:
+                st.markdown(f"**Factorización de b = {num_b}:**")
+                st.latex(rf"{num_b} = {comp_factores['str_b']}")
+                with st.expander(f"Ver divisiones sucesivas de {num_b}"):
+                    df_pb = pd.DataFrame(comp_factores["pasos_b"], columns=["Valor", "Divisor Primo"])
+                    st.dataframe(df_pb, use_container_width=True, hide_index=True)
+
+            st.markdown("#### 📊 Tabla Comparativa de Factores y Exponentes")
+            df_comp = pd.DataFrame([
+                {
+                    "Factor Primo (p)": r["primo"],
+                    f"Exponente en {num_a}": r["exp_a"],
+                    f"Exponente en {num_b}": r["exp_b"],
+                    "¿Es Factor Común?": r["comun"],
+                    "Exp para MSD (Mínimo)": r["exp_msd"],
+                    "Exp para MSM (Máximo)": r["exp_msm"],
+                }
+                for r in comp_factores["tabla_comparativa"]
+            ])
+            st.dataframe(df_comp, use_container_width=True, hide_index=True)
+
+            col_calc_msd, col_calc_msm = st.columns(2)
+            with col_calc_msd:
+                st.markdown("**Cálculo de MSD:**")
+                st.latex(rf"\text{{MSD}}({num_a}, {num_b}) = {comp_factores['str_msd']} = {comp_factores['msd']}")
+                st.caption("Producto de factores comunes elevados al menor exponente.")
+            with col_calc_msm:
+                st.markdown("**Cálculo de MSM:**")
+                st.latex(rf"\text{{MSM}}({num_a}, {num_b}) = {comp_factores['str_msm']} = {comp_factores['msm']}")
+                st.caption("Producto de todos los factores elevados al mayor exponente.")
+
+            st.markdown("#### 📋 Factorización Simultánea Tradicional (Conjunta)")
+            st.caption(
+                "Disposición escolar tradicional en la que ambos números se dividen simultáneamente por números primos. "
+                "Los factores que dividen a ambos al mismo tiempo (resaltados con `✓ Sí (Común)`) son los que conforman el MSD."
+            )
+            df_sim = pd.DataFrame([
+                {
+                    f"Número A ({num_a})": fila["a"],
+                    f"Número B ({num_b})": fila["b"],
+                    "Divisor Primo": fila["primo"],
+                    "¿Divide a ambos? (Aporta a MSD)": "✓ Sí (Común)" if fila["divide_ambos"] else ("-" if fila["primo"] == "-" else "No"),
+                }
+                for fila in filas_sim
+            ])
+            st.dataframe(df_sim, use_container_width=True, hide_index=True)
+
+        # ── VERIFICACIÓN MATEMÁTICA FINAL ──
+        st.divider()
+        st.markdown("### 🔍 Identidad y Comprobación Aritmética")
+        st.latex(rf"\text{{MSD}}({num_a}, {num_b}) \times \text{{MSM}}({num_a}, {num_b}) = {mcd_val} \times {msm_val} = {mcd_val * msm_val:,}")
+        st.latex(rf"{num_a} \times {num_b} = {num_a * num_b:,}")
+        if (num_a * num_b) == (mcd_val * msm_val):
+            st.success(f"✨ **Comprobación exitosa:** Se cumple la identidad fundamental: {num_a} × {num_b} = {mcd_val} × {msm_val} = {num_a * num_b:,}.")
 
 
 

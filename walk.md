@@ -1,58 +1,57 @@
-# Fase 1: Matemática Discreta - Guía de Recorrido
+# Matemática Discreta — Guía de Recorrido de la Aplicación
 
-¡El código fuente de tu aplicación en C++ (Qt) está completamente listo!
-A continuación te explico cómo probar y verificar todo el trabajo que hemos implementado.
-
-## ¿Cómo abrir y ejecutar el proyecto?
-
-1. Abre **Qt Creator**.
-2. Selecciona **File -> Open File or Project...**
-3. Navega hacia tu carpeta del proyecto:
-`[...]/04_Mate discreta/Fase 1`
-4. Selecciona el archivo **`CMakeLists.txt`**.
-5. Qt Creator te pedirá que configures el proyecto (seleccionar un Kit). Selecciona el Kit por defecto (e.g. Qt 6 /
-Desktop) y presiona **Configure**.
-6. Presiona **Run** (el ícono verde de "Play" abajo a la izquierda) o presiona `Ctrl+R` (o `Cmd+R` en Mac).
+¡La aplicación interactiva en Python (Streamlit) cuenta con todos los módulos implementados y verificados!
 
 ---
 
-## Módulos Implementados
+## ¿Cómo abrir y ejecutar el proyecto?
 
-### 1. Menú Principal
-Una interfaz centralizada usando `QStackedWidget` para que nunca se abran múltiples ventanas, todo ocurre dentro de una
-sola ventana ágil y rápida.
+1. Abre tu terminal y navega hasta la carpeta del proyecto.
+2. Asegúrate de tener instaladas las dependencias:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Ejecuta la aplicación:
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+4. Se abrirá automáticamente en tu navegador en `http://localhost:8501`.
 
-### 2. Permutaciones y Combinaciones
-- Puedes escoger mediante botones de radio (Radio Buttons) cuál de las dos operaciones realizar.
-- Soporta cálculos manejando factoriales mediante números grandes (`unsigned long long`).
-- Incluye validación: si ingresas un $n$ (total) menor al $r$ (seleccionados), el sistema arrojará una alerta y no
-explotará.
+---
 
-### 3. Producto Cartesiano
-- Implementé una interfaz completamente dinámica utilizando `QScrollArea`.
-- Puedes seleccionar la cantidad de conjuntos a operar (de 2 a 10).
-- Cada conjunto cuenta con un botón **"Agregar Elemento"**, el cual generará en tiempo real un nuevo campo de texto
-exclusivo para ese elemento, evitando la necesidad de comas y reduciendo errores del usuario.
-- El algoritmo recursivo se encargará de cruzar todos los conjuntos y entregarte los pares ordenados finales.
+## Módulos de la Aplicación
 
-### 4. Diagrama de Venn (3 Conjuntos + Universo)
-- Incluye una lista detallada con las 9 variables de la Inclusión-Exclusión: Universo, A, B, C, las intersecciones
-dobles, la intersección triple y el Complemento.
-- Puedes marcar **cualquier** variable como la **Incógnita**. Al hacerlo, esa caja se bloquea automáticamente y las
-demás variables se vuelven los datos de entrada requeridos.
-- Al calcular, el sistema realiza el álgebra lineal para despejar específicamente esa incógnita basándose en el teorema
-$|A \cup B \cup C|$ y la equivalencia del Universo, mostrándote el paso a paso detallado en pantalla.
+### 1. 📊 Permutaciones y Combinaciones
+- Permite calcular Permutaciones $P(n, r)$ y Combinaciones $C(n, r)$.
+- Manejo exacto de factoriales mediante enteros de precisión arbitraria en Python.
+- Muestra el procedimiento detallado paso a paso con fórmulas en LaTeX y desglose de factoriales.
 
-### 5. Resultados
-- Una pantalla de solo lectura centralizada donde se imprime tanto la operación matemática simple (como $P(n, r)$) como
-el texto desglosado paso por paso del Diagrama de Venn.
-- Cuenta con un botón para regresar inmediatamente al Menú Principal y seguir calculando.
+### 2. ✖️ Producto Cartesiano
+- Admite de 2 a 10 conjuntos ($A, B, C, \dots$).
+- Permite ingresar elementos separados por comas y genera todas las tuplas resultantes.
+- Despliega la métrica de total de tuplas, formato matemático en bloque de código y lista desplegable.
 
-> [!TIP]
-> **Revisión del Código Matemático:**
-> Si en el futuro necesitas ajustar la lógica, te recomiendo buscar el archivo `matematica/LogicaMatematica.cpp`. Toda
-la matemática pura ha sido intencionalmente extraída y separada de las ventanas para tener un código limpio (MVC -
-Modelo-Vista-Controlador).
+### 3. ⭕ Diagrama de Venn (2 y 3 Conjuntos)
+- Soporta tanto 2 como 3 conjuntos con su Universo y Complemento.
+- Permite seleccionar cualquier término como **Incógnita**, despejándola automáticamente mediante la fórmula de Inclusión-Exclusión.
+- Renderizado gráfico visual en Matplotlib con regiones exclusivas calculadas y operaciones adicionales (Unión, Intersección, Complementos, Diferencias).
 
-## ¡Prueba el sistema!
-Por favor abre el `CMakeLists.txt` en Qt Creator y haz unas pruebas; me comentas si hay algo que pulir o ajustar.
+### 4. 🗺️ Estimación de Ruta en Grafos *(Nuevo)*
+- **Ingreso por Matriz:** Edición interactiva directa con `st.data_editor` tipo hoja de cálculo (filas = origen, columnas = destino).
+- **Criterios de Optimización:**
+  - **Ruta Más Corta:** Algoritmo de Dijkstra paso a paso, mostrando distancias tentativas y predecesores.
+  - **Ruta Más Larga:** Búsqueda exhaustiva de caminos simples máximos (evitando ciclos infinitos) y detección de redes acíclicas (DAG / Ruta Crítica PERT-CPM).
+- **Tipo de Red:** Dirigida (Dígrafo) o No Dirigida (Bidireccional).
+- **Visualización Gráfica:** Renderizado de la red con NetworkX y Matplotlib con nodos y aristas de la ruta destacados en verde esmeralda o ámbar.
+- **Plantillas Predefinidas:** Botones rápidos para cargar redes de 4, 5 y 6 nodos o limpiar la matriz.
+
+### 5. 🔢 Cálculo de MSM y MSD (MCM y MCD) *(Nuevo)*
+- Entrada de 2 números enteros positivos $a$ y $b$.
+- **Método 1 (Por Algoritmo):**
+  - **MSD / MCD:** Algoritmo de Euclides con divisiones sucesivas completas ($a = b \cdot q + r$).
+  - **MSM / MCM:** Relación Fundamental $\text{MSM}(a, b) = \frac{a \times b}{\text{MSD}(a, b)}$ con sustitución paso a paso.
+- **Método 2 (Por Descomposición en Factores Primos):**
+  - Factorización individual en potencias de primos con tabla vertical de divisiones.
+  - Tabla comparativa de factores primos y exponentes ($\min$ para MSD, $\max$ para MSM).
+  - Tabla tradicional de **factorización simultánea conjunta**, resaltando los factores que dividen a ambos simultáneamente.
+- **Comprobación:** Verificación automática de la identidad $a \cdot b = \text{MSD} \cdot \text{MSM}$.

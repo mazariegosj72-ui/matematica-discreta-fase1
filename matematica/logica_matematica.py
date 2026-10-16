@@ -292,3 +292,23 @@ def resolver_venn_2_conjuntos(
     }
 
     return resultado, pasos, regiones
+
+
+# ═══════════════════════════════════════════════════════════════
+#  RE-EXPORTACIONES DE GRAFOS Y ARITMÉTICA
+# ═══════════════════════════════════════════════════════════════
+from .grafos import (
+    construir_grafo_desde_matriz,
+    dijkstra_paso_a_paso,
+    camino_mas_largo_paso_a_paso,
+    generar_figura_grafo,
+)
+
+from .aritmetica import (
+    descomponer_factores_primos,
+    algoritmo_euclides,
+    calcular_msm_algoritmo,
+    factorizacion_simultanea,
+    comparar_factores_primos,
+)
+
